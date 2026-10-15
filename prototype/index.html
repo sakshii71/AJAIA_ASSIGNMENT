@@ -1,0 +1,1850 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SidelineReel - Roster-Tagging Accuracy Engine Prototype</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #4f46e5;
+      --primary-hover: #4338ca;
+      --primary-light: #eef2ff;
+      --success: #059669;
+      --success-light: #ecfdf5;
+      --warning: #d97706;
+      --warning-light: #fffbeb;
+      --danger: #dc2626;
+      --danger-light: #fef2f2;
+      --slate-50: #f8fafc;
+      --slate-100: #f1f5f9;
+      --slate-200: #e2e8f0;
+      --slate-300: #cbd5e1;
+      --slate-400: #94a3b8;
+      --slate-500: #64748b;
+      --slate-600: #475569;
+      --slate-700: #334155;
+      --slate-800: #1e293b;
+      --slate-900: #0f172a;
+      --font: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+      --radius: 12px;
+      --radius-sm: 8px;
+      --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+      --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font);
+      background-color: var(--slate-100);
+      color: var(--slate-800);
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Top App Bar */
+    header.app-header {
+      background: #ffffff;
+      border-bottom: 1px solid var(--slate-200);
+      position: sticky;
+      top: 0;
+      z-index: 40;
+    }
+
+    .header-inner {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 0.85rem 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .brand-icon {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 800;
+      font-size: 1.15rem;
+      box-shadow: 0 2px 4px rgba(79, 70, 229, 0.3);
+    }
+
+    .brand-text h1 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--slate-900);
+      line-height: 1.2;
+    }
+
+    .brand-text span {
+      font-size: 0.75rem;
+      color: var(--slate-500);
+      display: block;
+    }
+
+    .header-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: var(--primary-light);
+      color: var(--primary);
+      padding: 0.3rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      border: 1px solid #c7d2fe;
+    }
+
+    /* Stepper Navigation */
+    .stepper-container {
+      background: white;
+      border-bottom: 1px solid var(--slate-200);
+      padding: 0.85rem 1.25rem;
+    }
+
+    .stepper-inner {
+      max-width: 1080px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+    }
+
+    .step-item {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.5rem 0.85rem;
+      border-radius: var(--radius-sm);
+      background: transparent;
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: inherit;
+      text-align: left;
+    }
+
+    .step-item:hover:not(.locked) {
+      background: var(--slate-50);
+    }
+
+    .step-item.active {
+      background: var(--primary-light);
+      border-color: #c7d2fe;
+    }
+
+    .step-item.locked {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    .step-item.locked:hover {
+      background: transparent;
+    }
+
+    .lock-indicator {
+      font-size: 0.72rem;
+      margin-left: 0.2rem;
+      opacity: 0.8;
+    }
+
+    .step-num {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: var(--slate-200);
+      color: var(--slate-600);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      font-weight: 700;
+      transition: all 0.2s ease;
+    }
+
+    .step-item.active .step-num {
+      background: var(--primary);
+      color: white;
+    }
+
+    .step-item.completed .step-num {
+      background: var(--success);
+      color: white;
+    }
+
+    .step-label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--slate-600);
+    }
+
+    .step-item.active .step-label {
+      color: var(--primary);
+    }
+
+    .step-subtext {
+      font-size: 0.72rem;
+      color: var(--slate-400);
+      display: block;
+    }
+
+    .step-divider {
+      flex: 1;
+      height: 2px;
+      background: var(--slate-200);
+      margin: 0 0.25rem;
+    }
+
+    /* Main Container */
+    main.main-content {
+      max-width: 1080px;
+      margin: 1.5rem auto;
+      padding: 0 1.25rem;
+      flex: 1;
+      width: 100%;
+    }
+
+    .screen-view {
+      display: none;
+    }
+
+    .screen-view.active {
+      display: block;
+      animation: fadeIn 0.25s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Screen 1: Coach Queue */
+    .queue-header-card {
+      background: white;
+      border-radius: var(--radius);
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1.25rem;
+      border: 1px solid var(--slate-200);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .queue-info h2 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--slate-900);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .pulse-dot {
+      width: 9px;
+      height: 9px;
+      background: var(--warning);
+      border-radius: 50%;
+      box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.25);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(217, 119, 6, 0.4); }
+      70% { box-shadow: 0 0 0 8px rgba(217, 119, 6, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(217, 119, 6, 0); }
+    }
+
+    .queue-info p {
+      font-size: 0.85rem;
+      color: var(--slate-600);
+      margin-top: 0.25rem;
+    }
+
+    .progress-box {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 0.35rem;
+    }
+
+    .progress-stat {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--slate-700);
+    }
+
+    .progress-bar-track {
+      width: 170px;
+      height: 8px;
+      background: var(--slate-200);
+      border-radius: 9999px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: var(--primary);
+      width: 0%;
+      transition: width 0.3s ease;
+      border-radius: 9999px;
+    }
+
+    /* Cards Stack */
+    .cards-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .clip-card {
+      background: white;
+      border-radius: var(--radius);
+      border: 1px solid var(--slate-200);
+      padding: 1.25rem;
+      display: grid;
+      grid-template-columns: 200px 1fr;
+      gap: 1.25rem;
+      box-shadow: var(--shadow-sm);
+      transition: all 0.25s ease;
+      position: relative;
+    }
+
+    .clip-card:hover {
+      box-shadow: var(--shadow);
+      border-color: var(--slate-300);
+    }
+
+    .clip-card.resolved-confirmed {
+      border-color: #86efac;
+      background: #f0fdf4;
+    }
+
+    .clip-card.resolved-reassigned {
+      border-color: #93c5fd;
+      background: #eff6ff;
+    }
+
+    .clip-card.resolved-withheld {
+      border-color: #fde68a;
+      background: #fefce8;
+    }
+
+    /* Video Placeholder & Jersey */
+    .clip-media {
+      position: relative;
+      background: #0f172a;
+      border-radius: var(--radius-sm);
+      aspect-ratio: 16 / 9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .clip-media canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0.85;
+    }
+
+    .play-button-overlay {
+      position: relative;
+      z-index: 2;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.88);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--slate-900);
+      font-size: 0.85rem;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+      transition: transform 0.15s ease;
+    }
+
+    .clip-media:hover .play-button-overlay {
+      transform: scale(1.1);
+      background: #ffffff;
+    }
+
+    .timestamp-badge {
+      position: absolute;
+      bottom: 6px;
+      left: 6px;
+      z-index: 2;
+      background: rgba(0, 0, 0, 0.7);
+      color: white;
+      font-size: 0.68rem;
+      font-family: var(--font-mono);
+      padding: 0.1rem 0.35rem;
+      border-radius: 4px;
+    }
+
+    /* Jersey Chip */
+    .jersey-chip {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      z-index: 2;
+      width: 34px;
+      height: 34px;
+      background: #1e3a8a;
+      color: #ffffff;
+      border: 2px solid #60a5fa;
+      border-radius: 6px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 0.85rem;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+      line-height: 1;
+    }
+
+    .jersey-chip.opponent {
+      background: #991b1b;
+      border-color: #f87171;
+    }
+
+    .jersey-chip span.label {
+      font-size: 0.45rem;
+      text-transform: uppercase;
+      opacity: 0.8;
+      letter-spacing: 0.5px;
+    }
+
+    /* Card Details */
+    .clip-details {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 0.75rem;
+    }
+
+    .flag-reason-banner {
+      background: var(--warning-light);
+      border-left: 3px solid var(--warning);
+      padding: 0.4rem 0.65rem;
+      border-radius: 4px;
+      font-size: 0.78rem;
+      color: #92400e;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+    }
+
+    .confidence-pill {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      font-weight: 600;
+      background: #fef3c7;
+      color: #78350f;
+      padding: 0.15rem 0.45rem;
+      border-radius: 4px;
+      white-space: nowrap;
+    }
+
+    .match-context {
+      font-size: 0.88rem;
+      color: var(--slate-700);
+    }
+
+    .match-context strong {
+      color: var(--slate-900);
+    }
+
+    .match-context .meta-line {
+      font-size: 0.76rem;
+      color: var(--slate-500);
+      margin-top: 0.15rem;
+    }
+
+    /* Actions Bar */
+    .card-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.5rem;
+      padding-top: 0.5rem;
+      border-top: 1px solid var(--slate-100);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      font-family: inherit;
+      font-size: 0.82rem;
+      font-weight: 600;
+      padding: 0.45rem 0.85rem;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: var(--primary-hover);
+    }
+
+    .btn-success {
+      background: var(--success);
+      color: white;
+    }
+
+    .btn-success:hover:not(:disabled) {
+      background: #047857;
+    }
+
+    .btn-secondary {
+      background: white;
+      color: var(--slate-700);
+      border-color: var(--slate-300);
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: var(--slate-50);
+      border-color: var(--slate-400);
+    }
+
+    .btn-outline-danger {
+      background: white;
+      color: var(--danger);
+      border-color: #fca5a5;
+    }
+
+    .btn-outline-danger:hover:not(:disabled) {
+      background: var(--danger-light);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .reassign-select {
+      font-family: inherit;
+      font-size: 0.82rem;
+      padding: 0.45rem 0.65rem;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--slate-300);
+      background: white;
+      color: var(--slate-700);
+      cursor: pointer;
+    }
+
+    .reassign-select:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
+    }
+
+    .resolved-status-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 0.35rem 0.75rem;
+      border-radius: 9999px;
+    }
+
+    .resolved-status-tag.confirmed {
+      background: var(--success-light);
+      color: var(--success);
+      border: 1px solid #a7f3d0;
+    }
+
+    .resolved-status-tag.reassigned {
+      background: #dbeafe;
+      color: #1d4ed8;
+      border: 1px solid #bfdbfe;
+    }
+
+    .resolved-status-tag.withheld {
+      background: var(--warning-light);
+      color: var(--warning);
+      border: 1px solid #fde68a;
+    }
+
+    /* Queue Bottom Sticky Bar */
+    .queue-finish-bar {
+      margin-top: 1.5rem;
+      background: white;
+      border-radius: var(--radius);
+      padding: 1rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border: 1px solid var(--slate-200);
+      box-shadow: var(--shadow);
+    }
+
+    .finish-bar-hint {
+      font-size: 0.85rem;
+      color: var(--slate-600);
+    }
+
+    /* Screen 2: Parent Reel Preview */
+    .parent-reel-view {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .parent-header-card {
+      background: white;
+      border-radius: var(--radius);
+      padding: 1.25rem 1.5rem;
+      border: 1px solid var(--slate-200);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .athlete-profile {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+    }
+
+    .avatar-jersey {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: #1e3a8a;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 1.1rem;
+      border: 2px solid #60a5fa;
+    }
+
+    .athlete-details h2 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--slate-900);
+    }
+
+    .athlete-details p {
+      font-size: 0.78rem;
+      color: var(--slate-500);
+    }
+
+    /* Withheld Notice Banner */
+    .withheld-banner {
+      background: #fefce8;
+      border: 1px solid #fef08a;
+      border-radius: var(--radius-sm);
+      padding: 0.75rem 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.82rem;
+      color: #854d0e;
+      gap: 0.75rem;
+    }
+
+    .withheld-banner strong {
+      color: #713f12;
+    }
+
+    /* Video Player Mock */
+    .player-container {
+      background: #090d16;
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow-lg);
+      border: 1px solid var(--slate-800);
+    }
+
+    .mock-video-stage {
+      position: relative;
+      aspect-ratio: 16 / 9;
+      width: 100%;
+      max-height: 440px;
+      background: radial-gradient(circle at center, #1e293b 0%, #090d16 100%);
+      color: white;
+      overflow: hidden;
+    }
+
+    .mock-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .player-overlays {
+      position: absolute;
+      top: 1rem;
+      left: 1rem;
+      right: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      z-index: 10;
+      pointer-events: none;
+    }
+
+    .live-badge {
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(6px);
+      padding: 0.35rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    /* Frosted Clip Title Overlay (Unobstructed at bottom-left) */
+    .player-title-overlay {
+      position: absolute;
+      bottom: 12px;
+      left: 12px;
+      z-index: 10;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(8px);
+      padding: 0.6rem 0.95rem;
+      border-radius: var(--radius-sm);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      pointer-events: none;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+      text-align: left;
+      max-width: calc(100% - 24px);
+    }
+
+    .player-title-overlay h4 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #ffffff;
+      line-height: 1.25;
+    }
+
+    .player-title-overlay p {
+      font-size: 0.74rem;
+      color: #94a3b8;
+      margin-top: 2px;
+    }
+
+    .player-controls {
+      background: #0f172a;
+      padding: 0.75rem 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: white;
+      border-top: 1px solid var(--slate-800);
+    }
+
+    .playback-bar {
+      flex: 1;
+      margin: 0 1rem;
+      height: 6px;
+      background: var(--slate-700);
+      border-radius: 9999px;
+      position: relative;
+      cursor: pointer;
+    }
+
+    .playback-progress {
+      width: 35%;
+      height: 100%;
+      background: var(--primary);
+      border-radius: 9999px;
+    }
+
+    /* Reel Clip Feed */
+    .clips-feed-section {
+      background: white;
+      border-radius: var(--radius);
+      padding: 1.25rem 1.5rem;
+      border: 1px solid var(--slate-200);
+    }
+
+    .feed-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .feed-header h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--slate-900);
+    }
+
+    .parent-clips-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .parent-clip-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.75rem 1rem;
+      border: 1px solid var(--slate-200);
+      border-radius: var(--radius-sm);
+      background: var(--slate-50);
+      transition: all 0.2s ease;
+      gap: 1rem;
+      cursor: pointer;
+    }
+
+    .parent-clip-row:hover {
+      background: white;
+      border-color: var(--slate-300);
+    }
+
+    .parent-clip-info {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+    }
+
+    .clip-mini-thumb {
+      width: 60px;
+      height: 38px;
+      background: var(--slate-800);
+      border-radius: 4px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 0.7rem;
+    }
+
+    .flag-kid-btn {
+      color: var(--slate-500);
+      border: 1px solid var(--slate-300);
+      background: white;
+      font-size: 0.76rem;
+      padding: 0.35rem 0.65rem;
+      border-radius: 6px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      transition: all 0.15s ease;
+    }
+
+    .flag-kid-btn:hover {
+      background: var(--danger-light);
+      color: var(--danger);
+      border-color: #fca5a5;
+    }
+
+    /* Screen 3: Impact Summary */
+    .recap-view {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .impact-metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 1rem;
+    }
+
+    .metric-card {
+      background: white;
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      border: 1px solid var(--slate-200);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .metric-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--slate-500);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .metric-value {
+      font-size: 1.75rem;
+      font-weight: 800;
+      color: var(--slate-900);
+      margin: 0.3rem 0;
+      line-height: 1;
+    }
+
+    .metric-footnote {
+      font-size: 0.72rem;
+      color: var(--slate-500);
+    }
+
+    .comparison-card {
+      background: white;
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      border: 1px solid var(--slate-200);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .comparison-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-top: 1rem;
+    }
+
+    .comparison-col {
+      padding: 1.25rem;
+      border-radius: var(--radius-sm);
+    }
+
+    .comparison-col.before {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+    }
+
+    .comparison-col.after {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+    }
+
+    .comparison-col h4 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .comparison-col.before h4 { color: #991b1b; }
+    .comparison-col.after h4 { color: #166534; }
+
+    .comparison-col ul {
+      list-style-type: none;
+      font-size: 0.82rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .comparison-col li {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.4rem;
+    }
+
+    /* Toast Notification */
+    .toast-container {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      pointer-events: none;
+    }
+
+    .toast {
+      background: var(--slate-900);
+      color: white;
+      padding: 0.85rem 1.25rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.85rem;
+      box-shadow: var(--shadow-lg);
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      pointer-events: auto;
+      animation: slideUp 0.25s ease forwards;
+      max-width: 400px;
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Footer */
+    footer.app-footer {
+      background: white;
+      border-top: 1px solid var(--slate-200);
+      padding: 1.25rem;
+      text-align: center;
+      font-size: 0.78rem;
+      color: var(--slate-500);
+      margin-top: auto;
+    }
+
+    footer a {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .clip-card {
+        grid-template-columns: 1fr;
+      }
+      .comparison-grid {
+        grid-template-columns: 1fr;
+      }
+      .stepper-inner {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .step-divider {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- App Header -->
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="brand-group">
+        <div class="brand-icon">S</div>
+        <div class="brand-text">
+          <h1>SidelineReel</h1>
+          <span>Roster-Tagging Verification Prototype</span>
+        </div>
+      </div>
+      <div class="header-badge">
+        <span>● Active Session:</span>
+        <strong>Pilot Queue: Ridgeline, Brightwater, Cobblestone (demo)</strong>
+      </div>
+    </div>
+  </header>
+
+  <!-- Interactive Stepper with Gated Access -->
+  <nav class="stepper-container" aria-label="Workflow Steps">
+    <div class="stepper-inner">
+      <button class="step-item active" id="step-btn-1" onclick="navigateToStep(1)">
+        <div class="step-num" id="step-num-1">1</div>
+        <div>
+          <span class="step-label">Coach Review Queue</span>
+          <span class="step-subtext" id="step-subtext-1">5 clips need eyes</span>
+        </div>
+      </button>
+      <div class="step-divider"></div>
+      <button class="step-item locked" id="step-btn-2" onclick="navigateToStep(2)">
+        <div class="step-num" id="step-num-2">2</div>
+        <div>
+          <span class="step-label">Parent Reel Preview <span class="lock-indicator" id="lock-icon-2">🔒</span></span>
+          <span class="step-subtext" id="step-subtext-2">Locked until queue complete</span>
+        </div>
+      </button>
+      <div class="step-divider"></div>
+      <button class="step-item locked" id="step-btn-3" onclick="navigateToStep(3)">
+        <div class="step-num" id="step-num-3">3</div>
+        <div>
+          <span class="step-label">Weekly Recap & Impact <span class="lock-indicator" id="lock-icon-3">🔒</span></span>
+          <span class="step-subtext" id="step-subtext-3">Locked until queue complete</span>
+        </div>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Main Views Container -->
+  <main class="main-content">
+
+    <!-- SCREEN 1: COACH REVIEW QUEUE -->
+    <section class="screen-view active" id="screen-1" aria-labelledby="queue-heading">
+      <div class="queue-header-card">
+        <div class="queue-info">
+          <h2 id="queue-heading">
+            <span class="pulse-dot"></span>
+            Pilot Queue: Ridgeline, Brightwater, Cobblestone (demo)
+          </h2>
+          <p>AI detected 5 clips with ambiguous digits or overlapping rosters across pilot clubs. Review clips before auto-delivery.</p>
+        </div>
+        <div class="progress-box">
+          <div class="progress-stat" id="progress-text">0 of 5 Reviewed</div>
+          <div class="progress-bar-track">
+            <div class="progress-bar-fill" id="progress-fill"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cards-stack" id="coach-cards-container">
+        <!-- Rendered dynamically via JS -->
+      </div>
+
+      <div class="queue-finish-bar">
+        <div class="finish-bar-hint" id="finish-hint">
+          Handle all 5 clips to unlock parent reel generation. (Withheld clips stay out of reels).
+        </div>
+        <button class="btn btn-primary" id="btn-finish-queue" disabled onclick="navigateToStep(2)">
+          Finish & Preview Parent Reel →
+        </button>
+      </div>
+    </section>
+
+    <!-- SCREEN 2: PARENT REEL PREVIEW -->
+    <section class="screen-view" id="screen-2" aria-labelledby="parent-heading">
+      <div class="parent-reel-view">
+        <div class="parent-header-card">
+          <div class="athlete-profile">
+            <div class="avatar-jersey">14</div>
+            <div class="athlete-details">
+              <h2 id="parent-heading">Maya Lin • Highlight Reel</h2>
+              <p>Ridgeline Youth Soccer Club • U-12 Girls • Match vs Summit Stars</p>
+            </div>
+          </div>
+          <div style="display:flex; gap:0.5rem;">
+            <button class="btn btn-secondary" onclick="shareReel()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+              Share Reel (Grandparents / Scouts)
+            </button>
+            <button class="btn btn-primary" onclick="navigateToStep(3)">
+              View Weekly Recap Telemetry →
+            </button>
+          </div>
+        </div>
+
+        <!-- Dynamic Withheld Notification Banner (Appears whenever a clip was left out) -->
+        <div class="withheld-banner" id="withheld-notice" style="display:none;">
+          <div>
+            <strong>Accuracy Protection:</strong>
+            <span id="withheld-text">1 clip was held back for review to ensure only genuine highlights appear.</span>
+          </div>
+          <span style="font-size:0.75rem; opacity:0.85;">Reel delivered on schedule</span>
+        </div>
+
+        <!-- Video Player Stage (Unobstructed Layout) -->
+        <div class="player-container">
+          <div class="mock-video-stage" id="video-stage">
+            <canvas id="player-canvas" class="mock-canvas"></canvas>
+            
+            <!-- Top Badges (No overlap) -->
+            <div class="player-overlays">
+              <div class="live-badge">
+                <span style="color:#4ade80;">●</span> Maya Lin #14 — Ridgeline Blue
+              </div>
+              <div class="live-badge" id="player-clip-counter">
+                Clip 1 of 4
+              </div>
+            </div>
+
+            <!-- Bottom-Left Frosted Clip Title (Completely separated from center jersey badge) -->
+            <div class="player-title-overlay">
+              <h4 id="player-headline">Corner Kick Header Goal</h4>
+              <p id="player-subline">2nd Half • 34:12 • Verified Roster Tag</p>
+            </div>
+          </div>
+          <div class="player-controls">
+            <button class="btn btn-secondary" style="padding: 0.3rem 0.6rem; color:white; background:transparent; border-color:var(--slate-700);" onclick="togglePlayPause()">
+              ▶ Play
+            </button>
+            <div class="playback-bar">
+              <div class="playback-progress" id="playback-bar-fill"></div>
+            </div>
+            <span style="font-size: 0.75rem; font-family: var(--font-mono); color: var(--slate-400);">0:14 / 0:42</span>
+          </div>
+        </div>
+
+        <!-- Clips Feed with Parent Safety Veto -->
+        <div class="clips-feed-section">
+          <div class="feed-header">
+            <h3>Clips Included in this Reel (<span id="included-clips-count">4</span>)</h3>
+            <span style="font-size: 0.78rem; color: var(--slate-500);">Click any clip to preview • All clips verified</span>
+          </div>
+
+          <div class="parent-clips-list" id="parent-clips-feed">
+            <!-- Dynamic clips rendered by JS -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SCREEN 3: WEEKLY RECAP & IMPACT SUMMARY -->
+    <section class="screen-view" id="screen-3" aria-labelledby="recap-heading">
+      <div class="recap-view">
+        <div class="queue-header-card">
+          <div>
+            <h2 id="recap-heading">Weekly Impact & Delivery Telemetry</h2>
+            <p id="recap-subtitle">Live post-match dispatch metrics computed from pilot queue decisions</p>
+          </div>
+          <div style="display:flex; gap:0.5rem;">
+            <button class="btn btn-secondary" onclick="resetPrototype()">
+              ↺ Start Over / Reset Demo
+            </button>
+            <button class="btn btn-primary" onclick="navigateToStep(1)">
+              ← Return to Coach Queue
+            </button>
+          </div>
+        </div>
+
+        <!-- Live Computed Telemetry Cards -->
+        <div class="impact-metrics-grid">
+          <div class="metric-card">
+            <div class="metric-label">Total Clips Processed [Mock data]</div>
+            <div class="metric-value" id="recap-total-val">18</div>
+            <div class="metric-footnote" id="recap-total-sub">[Mock data] 13 auto-confirmed + 5 in coach review queue</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Auto-Confirmed (C &ge; 85%) [Mock data]</div>
+            <div class="metric-value" style="color: var(--success);" id="recap-auto-val">13</div>
+            <div class="metric-footnote">[Mock data] High visual clarity & no roster conflict</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Coach Reviewed / Confirmed</div>
+            <div class="metric-value" id="recap-confirmed-val" style="color: var(--primary);">0</div>
+            <div class="metric-footnote" id="recap-confirmed-sub">Computed live from your queue decisions</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Withheld from Delivery</div>
+            <div class="metric-value" id="recap-withheld-val" style="color: var(--warning);">0</div>
+            <div class="metric-footnote" id="recap-withheld-sub">Computed live from your queue decisions</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Parent 'not my kid' flags</div>
+            <div class="metric-value" id="recap-flagged-val" style="color: var(--danger);">0</div>
+            <div class="metric-footnote" id="recap-flagged-sub">Computed live from Screen 2 retractions</div>
+          </div>
+        </div>
+
+        <!-- Before & After Comparison -->
+        <div class="comparison-card">
+          <h3>Roster Accuracy Engine: Before vs. After Protection</h3>
+          <div class="comparison-grid">
+            <div class="comparison-col before">
+              <h4>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                Previous Behavior (Unchecked OCR)
+              </h4>
+              <ul>
+                <li>❌ <strong>Wrong-kid thumbnails:</strong> Suspected contributor to the ~30% unopened reels (cause split unknown, measure first).</li>
+                <li>❌ <strong>No Coach Gate:</strong> Ambiguous digit swaps (16/61, 1/11) automatically published to family reels without warning.</li>
+                <li>❌ <strong>Support Burden:</strong> Upset parents had to file manual tickets (M3: "daughter was so disappointed").</li>
+                <li>❌ <strong>Renewal Risk:</strong> Ridgeline's own parent filed a mis-tag ticket (14 vs 4) while the club is pushing for livestreaming ahead of renewal.</li>
+              </ul>
+            </div>
+            <div class="comparison-col after">
+              <h4>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                With Accuracy Engine & Human-in-the-Loop
+              </h4>
+              <ul>
+                <li>✅ <strong>Withhold by default (design goal):</strong> Conservative withholding ensures unconfirmed clips never reach parents.</li>
+                <li>✅ <strong>Target: under 45s review per game (unvalidated):</strong> Resolves high-leverage edge cases without volunteer burnout.</li>
+                <li>✅ <strong>Parent Safety Veto:</strong> Instant "This isn't my kid" button immediately purges mistakes with zero friction.</li>
+                <li>✅ <strong>Transparent Communication:</strong> In-app notices clarify why clips were held back, maintaining family trust.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Toast Notification Hub -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Footer -->
+  <footer class="app-footer">
+    Prototype for Ajaia assessment • <a href="https://ajaia.ai" target="_blank" rel="noopener">https://ajaia.ai</a> • SidelineReel Product Team (All roster names are mock data)
+  </footer>
+
+  <!-- Prototype State & Logic -->
+  <script>
+    // System State: Pilot Queue Data
+    const queueData = [
+      {
+        id: "clip-1",
+        detectedNumber: 14,
+        confidence: 76,
+        club: "Ridgeline Youth Soccer",
+        matchTime: "1st Half • 18:24",
+        actionText: "Breakaway sprint down right wing & cross",
+        flagReason: "Digit Substring Overlap: #14 Maya Lin and #4 Ava Chen both active on Ridgeline roster",
+        candidatePlayers: [
+          { name: "Maya Lin (#14)", id: "p14" },
+          { name: "Ava Chen (#4)", id: "p4" }
+        ],
+        defaultCandidate: "Maya Lin (#14)",
+        resolved: null // 'confirmed', 'reassigned', 'withheld'
+      },
+      {
+        id: "clip-2",
+        detectedNumber: 1,
+        confidence: 68,
+        club: "Cobblestone Little League",
+        matchTime: "Top 3rd • 08:15",
+        actionText: "Catch at short-stop & throw to 1st base",
+        flagReason: "Repetition Confusion: #1 Leo vs #11 Sam (single digit match error)",
+        candidatePlayers: [
+          { name: "Leo Miller (#1)", id: "p1" },
+          { name: "Sam Brody (#11)", id: "p11" }
+        ],
+        defaultCandidate: "Leo Miller (#1)",
+        resolved: null
+      },
+      {
+        id: "clip-3",
+        detectedNumber: 61,
+        confidence: 64,
+        club: "Brightwater Youth Lacrosse",
+        matchTime: "Quarter 2 • 14:02",
+        actionText: "Ground ball scoop and pass under defensive pressure",
+        flagReason: "Transposed Digits: #61 detected on jersey, but roster has #16 Tyler and #61 Noah",
+        candidatePlayers: [
+          { name: "Noah Vance (#61)", id: "p61" },
+          { name: "Tyler Adams (#16)", id: "p16" }
+        ],
+        defaultCandidate: "Noah Vance (#61)",
+        resolved: null
+      },
+      {
+        id: "clip-4",
+        detectedNumber: 7,
+        confidence: 72,
+        club: "Ridgeline Youth Soccer",
+        matchTime: "2nd Half • 39:10",
+        actionText: "Slide tackle interception in defensive third",
+        flagReason: "Opposing Team Conflict: Both Ridgeline and Summit Stars field #7 (Color confidence 72%)",
+        candidatePlayers: [
+          { name: "Chloe Diaz (#7 Ridgeline Blue)", id: "p7-blue" },
+          { name: "Opponent Player (#7 Summit Red)", id: "p7-red" }
+        ],
+        defaultCandidate: "Chloe Diaz (#7 Ridgeline Blue)",
+        resolved: null
+      },
+      {
+        id: "clip-5",
+        detectedNumber: 9,
+        confidence: 58,
+        club: "Ridgeline Youth Soccer",
+        matchTime: "2nd Half • 41:50",
+        actionText: "Midfield header contest near sideline",
+        flagReason: "Visual Occlusion: Number partially obscured by mud/wrinkle; OCR confidence below 85%",
+        candidatePlayers: [
+          { name: "Ben Lawson (#9)", id: "p9" },
+          { name: "Jack Rivera (#8)", id: "p8" }
+        ],
+        defaultCandidate: "Ben Lawson (#9)",
+        resolved: null
+      }
+    ];
+
+    // Parent Reel Clips State (Maya Lin #14)
+    let parentReelClips = [
+      {
+        id: "reel-clip-1",
+        time: "1st Half • 18:24",
+        title: "Breakaway sprint & accurate cross into box",
+        badge: "Verified #14",
+        duration: "0:09"
+      },
+      {
+        id: "reel-clip-2",
+        time: "1st Half • 27:40",
+        title: "Defensive strip & transition counter-attack",
+        badge: "Verified #14",
+        duration: "0:07"
+      },
+      {
+        id: "reel-clip-3",
+        time: "2nd Half • 34:12",
+        title: "Corner kick header goal into upper right 90",
+        badge: "Verified #14",
+        duration: "0:12"
+      },
+      {
+        id: "reel-clip-4",
+        time: "2nd Half • 42:05",
+        title: "Skill dribble past 2 defenders to ice game",
+        badge: "Verified #14",
+        duration: "0:11"
+      }
+    ];
+
+    let parentFlagsCount = 0;
+
+    // Check if Coach Queue is complete
+    function isQueueComplete() {
+      return queueData.every(q => q.resolved !== null);
+    }
+
+    // Initialize Canvas Visualizers
+    function initCanvasVisualizer(canvasId, detectedNum, isOpponent) {
+      const canvas = document.getElementById(canvasId);
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width = 320;
+      const h = canvas.height = 180;
+
+      let frame = 0;
+      let animId = null;
+
+      function animate() {
+        ctx.fillStyle = "#0f172a";
+        ctx.fillRect(0, 0, w, h);
+
+        // Simulated sports field lines
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.15)";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(w / 2, h / 2, 45, 0, Math.PI * 2);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(w / 2, 0);
+        ctx.lineTo(w / 2, h);
+        ctx.stroke();
+
+        // Animated player silhouette
+        const xOffset = Math.sin(frame * 0.04) * 24;
+        const yOffset = Math.cos(frame * 0.04) * 10;
+
+        // Player dot / jersey marker
+        ctx.fillStyle = isOpponent ? "#ef4444" : "#3b82f6";
+        ctx.beginPath();
+        ctx.arc(w / 2 + xOffset, h / 2 + yOffset, 16, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Jersey Number text
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "bold 13px 'Plus Jakarta Sans', sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(detectedNum, w / 2 + xOffset, h / 2 + yOffset);
+
+        // Bounding Box Simulation
+        ctx.strokeStyle = "rgba(79, 70, 229, 0.75)";
+        ctx.lineWidth = 1.5;
+        ctx.strokeRect(w / 2 + xOffset - 22, h / 2 + yOffset - 26, 44, 52);
+
+        frame++;
+        animId = requestAnimationFrame(animate);
+      }
+      animate();
+    }
+
+    // Render Coach Cards
+    function renderCoachQueue() {
+      const container = document.getElementById('coach-cards-container');
+      container.innerHTML = '';
+
+      queueData.forEach((item) => {
+        const card = document.createElement('div');
+        card.className = `clip-card ${item.resolved ? 'resolved-' + item.resolved : ''}`;
+        card.id = `card-${item.id}`;
+
+        const isOpponent = item.id === 'clip-4';
+
+        let actionAreaHTML = '';
+        if (item.resolved === 'confirmed') {
+          actionAreaHTML = `
+            <div class="resolved-status-tag confirmed">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              Confirmed for ${item.resolvedRecipient || item.defaultCandidate}
+            </div>
+            <button class="btn btn-secondary" style="font-size:0.75rem; padding:0.3rem 0.6rem;" onclick="undoResolution('${item.id}')">Undo</button>
+          `;
+        } else if (item.resolved === 'reassigned') {
+          actionAreaHTML = `
+            <div class="resolved-status-tag reassigned">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><polyline points="17 11 19 13 23 9"/></svg>
+              Reassigned to ${item.resolvedRecipient}
+            </div>
+            <button class="btn btn-secondary" style="font-size:0.75rem; padding:0.3rem 0.6rem;" onclick="undoResolution('${item.id}')">Undo</button>
+          `;
+        } else if (item.resolved === 'withheld') {
+          actionAreaHTML = `
+            <div class="resolved-status-tag withheld">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+              Withheld from Reels (Safe Fallback)
+            </div>
+            <button class="btn btn-secondary" style="font-size:0.75rem; padding:0.3rem 0.6rem;" onclick="undoResolution('${item.id}')">Undo</button>
+          `;
+        } else {
+          // Unresolved actions
+          const optionsHTML = item.candidatePlayers.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
+          actionAreaHTML = `
+            <button class="btn btn-success" onclick="resolveClip('${item.id}', 'confirmed', '${item.defaultCandidate}')">
+              ✓ Confirm ${item.defaultCandidate}
+            </button>
+            <div style="display:inline-flex; align-items:center; gap:0.3rem;">
+              <select class="reassign-select" id="select-${item.id}">
+                ${optionsHTML}
+              </select>
+              <button class="btn btn-secondary" onclick="handleReassign('${item.id}')">
+                Reassign
+              </button>
+            </div>
+            <button class="btn btn-outline-danger" onclick="resolveClip('${item.id}', 'withheld')">
+              Can't tell, leave out
+            </button>
+          `;
+        }
+
+        card.innerHTML = `
+          <div class="clip-media" onclick="showToast('Playing 3s loop preview...')">
+            <canvas id="canvas-${item.id}"></canvas>
+            <div class="play-button-overlay">▶</div>
+            <div class="timestamp-badge">${item.matchTime}</div>
+            <div class="jersey-chip ${isOpponent ? 'opponent' : ''}">
+              <span class="label">JERSEY</span>
+              #${item.detectedNumber}
+            </div>
+          </div>
+          <div class="clip-details">
+            <div>
+              <div class="flag-reason-banner">
+                <span>⚠️ ${item.flagReason}</span>
+                <span class="confidence-pill">OCR Confidence: ${item.confidence}%</span>
+              </div>
+              <div class="match-context" style="margin-top:0.6rem;">
+                <strong>Action:</strong> ${item.actionText}
+                <div class="meta-line">Club: ${item.club} • Detected Bounding Box # ${item.detectedNumber}</div>
+              </div>
+            </div>
+            <div class="card-actions">
+              ${actionAreaHTML}
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+
+        setTimeout(() => {
+          initCanvasVisualizer(`canvas-${item.id}`, item.detectedNumber, isOpponent);
+        }, 30);
+      });
+
+      updateProgress();
+    }
+
+    function resolveClip(clipId, status, recipient = null) {
+      const item = queueData.find(q => q.id === clipId);
+      if (item) {
+        item.resolved = status;
+        item.resolvedRecipient = recipient;
+        renderCoachQueue();
+        showToast(status === 'withheld' ? "Clip withheld from all reels (safety default)" : `Clip confirmed for ${recipient || 'player'}`);
+      }
+    }
+
+    function handleReassign(clipId) {
+      const select = document.getElementById(`select-${clipId}`);
+      if (select) {
+        resolveClip(clipId, 'reassigned', select.value);
+      }
+    }
+
+    function undoResolution(clipId) {
+      const item = queueData.find(q => q.id === clipId);
+      if (item) {
+        item.resolved = null;
+        item.resolvedRecipient = null;
+        renderCoachQueue();
+      }
+    }
+
+    function updateProgress() {
+      const resolvedCount = queueData.filter(q => q.resolved !== null).length;
+      const total = queueData.length;
+      const percent = (resolvedCount / total) * 100;
+
+      document.getElementById('progress-text').innerText = `${resolvedCount} of ${total} Reviewed`;
+      document.getElementById('progress-fill').style.width = `${percent}%`;
+
+      const finishBtn = document.getElementById('btn-finish-queue');
+      const finishHint = document.getElementById('finish-hint');
+
+      // Update Stepper Lock State
+      const step2Btn = document.getElementById('step-btn-2');
+      const step3Btn = document.getElementById('step-btn-3');
+      const lock2 = document.getElementById('lock-icon-2');
+      const lock3 = document.getElementById('lock-icon-3');
+      const sub2 = document.getElementById('step-subtext-2');
+      const sub3 = document.getElementById('step-subtext-3');
+
+      if (resolvedCount === total) {
+        finishBtn.disabled = false;
+        finishHint.innerHTML = `<strong>All 5 clips handled!</strong> Ready to preview safe parent reels.`;
+        document.getElementById('step-num-1').innerHTML = '✓';
+        document.getElementById('step-btn-1').classList.add('completed');
+
+        // Unlock Steppers
+        step2Btn.classList.remove('locked');
+        step3Btn.classList.remove('locked');
+        if (lock2) lock2.style.display = 'none';
+        if (lock3) lock3.style.display = 'none';
+        sub2.innerText = "Maya's reel & safety veto";
+        sub3.innerText = "Delivery & risk telemetry";
+      } else {
+        finishBtn.disabled = true;
+        finishHint.innerText = `Handle all 5 clips to unlock parent reel generation. (${total - resolvedCount} remaining)`;
+        document.getElementById('step-num-1').innerHTML = '1';
+        document.getElementById('step-btn-1').classList.remove('completed');
+
+        // Re-lock Steppers
+        step2Btn.classList.add('locked');
+        step3Btn.classList.add('locked');
+        if (lock2) lock2.style.display = 'inline';
+        if (lock3) lock3.style.display = 'inline';
+        sub2.innerText = "Locked until queue complete";
+        sub3.innerText = "Locked until queue complete";
+      }
+    }
+
+    // Step Navigation with Strict Completion Gating
+    function navigateToStep(step) {
+      if (step === 2 && !isQueueComplete()) {
+        showToast("🔒 Step 2 locked: Please resolve all 5 clips in the Coach Queue first.");
+        return;
+      }
+      if (step === 3 && !isQueueComplete()) {
+        showToast("🔒 Step 3 locked: Please complete the Coach Queue before viewing telemetry.");
+        return;
+      }
+
+      document.querySelectorAll('.screen-view').forEach(s => s.classList.remove('active'));
+      document.querySelectorAll('.step-item').forEach(b => b.classList.remove('active'));
+
+      document.getElementById(`screen-${step}`).classList.add('active');
+      document.getElementById(`step-btn-${step}`).classList.add('active');
+
+      if (step === 2) {
+        renderParentReel();
+      } else if (step === 3) {
+        renderRecapSummary();
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Render Screen 2 (Parent Reel)
+    function renderParentReel() {
+      const listContainer = document.getElementById('parent-clips-feed');
+      listContainer.innerHTML = '';
+
+      const count = parentReelClips.length;
+      document.getElementById('included-clips-count').innerText = count;
+
+      parentReelClips.forEach((clip, index) => {
+        const row = document.createElement('div');
+        row.className = 'parent-clip-row';
+        row.id = `parent-clip-row-${clip.id}`;
+        row.onclick = (e) => {
+          if (e.target.closest('.flag-kid-btn')) return;
+          selectClipForPlayer(index);
+        };
+        row.innerHTML = `
+          <div class="parent-clip-info">
+            <div class="clip-mini-thumb">
+              <span>▶ ${clip.duration}</span>
+            </div>
+            <div>
+              <div style="font-weight:600; font-size:0.88rem; color:var(--slate-900);">${clip.title}</div>
+              <div style="font-size:0.75rem; color:var(--slate-500);">${clip.time} • <span style="color:var(--success); font-weight:600;">${clip.badge}</span></div>
+            </div>
+          </div>
+          <button class="flag-kid-btn" onclick="flagParentClip('${clip.id}')" title="Click to immediately remove if this is not your child">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+            This isn't my kid
+          </button>
+        `;
+        listContainer.appendChild(row);
+      });
+
+      // Update Withheld Notice: Appears whenever any clip was left out
+      const withheldCount = queueData.filter(q => q.resolved === 'withheld').length;
+      const withheldNotice = document.getElementById('withheld-notice');
+      const withheldText = document.getElementById('withheld-text');
+
+      if (withheldCount > 0) {
+        withheldNotice.style.display = 'flex';
+        if (withheldCount === 1) {
+          withheldText.innerText = `1 clip was held back for review to ensure only genuine highlights appear.`;
+        } else {
+          withheldText.innerText = `${withheldCount} clips were held back for review to ensure only genuine highlights appear.`;
+        }
+      } else {
+        withheldNotice.style.display = 'none';
+      }
+
+      initCanvasVisualizer('player-canvas', 14, false);
+      if (parentReelClips.length > 0) {
+        selectClipForPlayer(0);
+      }
+    }
+
+    function selectClipForPlayer(index) {
+      if (index >= 0 && index < parentReelClips.length) {
+        const clip = parentReelClips[index];
+        document.getElementById('player-headline').innerText = clip.title;
+        document.getElementById('player-subline').innerText = `${clip.time} • ${clip.badge}`;
+        document.getElementById('player-clip-counter').innerText = `Clip ${index + 1} of ${parentReelClips.length}`;
+      }
+    }
+
+    function flagParentClip(clipId) {
+      const index = parentReelClips.findIndex(c => c.id === clipId);
+      if (index !== -1) {
+        parentReelClips.splice(index, 1);
+        parentFlagsCount++;
+        renderParentReel();
+        showToast(`Clip removed from Maya Lin's reel. Flagged for review.`);
+      }
+    }
+
+    function shareReel() {
+      showToast("✓ Link copied! Public Scout & Grandparent View enabled (no login needed).");
+    }
+
+    function togglePlayPause() {
+      showToast("Simulating reel playback with auto-stitched clips...");
+    }
+
+    // Render Screen 3: Live Computed Telemetry
+    function renderRecapSummary() {
+      const confirmedCount = queueData.filter(q => q.resolved === 'confirmed' || q.resolved === 'reassigned').length;
+      const withheldCount = queueData.filter(q => q.resolved === 'withheld').length;
+
+      document.getElementById('recap-confirmed-val').innerText = confirmedCount;
+      document.getElementById('recap-confirmed-sub').innerText = confirmedCount > 0
+        ? `[Live Calculation] ${confirmedCount} of 5 ambiguous clips verified & approved`
+        : `[Live Calculation] 0 clips verified by coach`;
+
+      document.getElementById('recap-withheld-val').innerText = withheldCount;
+      document.getElementById('recap-withheld-sub').innerText = withheldCount > 0
+        ? `[Live Calculation] ${withheldCount} unconfirmed clip${withheldCount > 1 ? 's' : ''} safely withheld from reels`
+        : `[Live Calculation] 0 clips withheld`;
+
+      document.getElementById('recap-flagged-val').innerText = parentFlagsCount;
+      document.getElementById('recap-flagged-sub').innerText = parentFlagsCount > 0
+        ? `[Live Calculation] ${parentFlagsCount} clip${parentFlagsCount > 1 ? 's' : ''} retracted via 1-click veto`
+        : `[Live Calculation] 0 parent retractions (reel accurate)`;
+
+      // Total Processed footnote live update
+      document.getElementById('recap-total-sub').innerText = `[Mock data] 13 auto-confirmed + ${queueData.length} in coach queue`;
+    }
+
+    function resetPrototype() {
+      queueData.forEach(q => {
+        q.resolved = null;
+        q.resolvedRecipient = null;
+      });
+      parentReelClips = [
+        {
+          id: "reel-clip-1",
+          time: "1st Half • 18:24",
+          title: "Breakaway sprint & accurate cross into box",
+          badge: "Verified #14",
+          duration: "0:09"
+        },
+        {
+          id: "reel-clip-2",
+          time: "1st Half • 27:40",
+          title: "Defensive strip & transition counter-attack",
+          badge: "Verified #14",
+          duration: "0:07"
+        },
+        {
+          id: "reel-clip-3",
+          time: "2nd Half • 34:12",
+          title: "Corner kick header goal into upper right 90",
+          badge: "Verified #14",
+          duration: "0:12"
+        },
+        {
+          id: "reel-clip-4",
+          time: "2nd Half • 42:05",
+          title: "Skill dribble past 2 defenders to ice game",
+          badge: "Verified #14",
+          duration: "0:11"
+        }
+      ];
+      parentFlagsCount = 0;
+      renderCoachQueue();
+      navigateToStep(1);
+      showToast("Prototype reset to initial state.");
+    }
+
+    // Toast Notification System
+    function showToast(message) {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.innerHTML = `<span>ℹ️</span><span>${message}</span>`;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(10px)';
+        toast.style.transition = 'all 0.25s ease';
+        setTimeout(() => {
+          if (toast.remove) toast.remove();
+          else if (toast.parentNode) toast.parentNode.removeChild(toast);
+        }, 250);
+      }, 3000);
+    }
+
+    // Initialize on load
+    window.addEventListener('DOMContentLoaded', () => {
+      renderCoachQueue();
+    });
+  </script>
+</body>
+</html>
