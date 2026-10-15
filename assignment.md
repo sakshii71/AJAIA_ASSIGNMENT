@@ -1,5 +1,5 @@
-Video: [PASTE VIDEO LINK]
-Prototype: [PASTE PROTOTYPE LINK]
+﻿Video: https://www.loom.com/share/e6430ae21da1450db2d58424b3aca1e6
+Prototype: https://moonlit-croissant-663e90.netlify.app
 Built for the Ajaia assessment (https://ajaia.ai)
 
 # Task 1. The roadmap call
@@ -17,7 +17,7 @@ Built for the Ajaia assessment (https://ajaia.ai)
 
 ## 1.2 Metric Correction & Clarification
 * **The Misleading 92% Metric:** Dashboard M5 reports a 92% Reel Share Rate, but specifies this is *calculated only over reels a parent opened*. Because approx 30% of reels are never opened, the honest upper bound on generated reel sharing is approx 0.92 x (1 - 0.30) = 64.4% (Target: increase opened rate to lift absolute shares).
-* **Distinct Metrics:** Do not conflate the 90% recap share rate (M2: weekly team summary) with the 92% open-to-share reel rate (M5: individual player highlight). Both demonstrate that *sharing* is SidelineReel’s viral growth loop, provided the content is seen and accurate.
+* **Distinct Metrics:** Do not conflate the 90% recap share rate (M2: weekly team summary) with the 92% open-to-share reel rate (M5: individual player highlight). Both demonstrate that *sharing* is SidelineReelâ€™s viral growth loop, provided the content is seen and accurate.
 
 ## 1.3 Ranked Roadmap
 
@@ -38,21 +38,21 @@ Built for the Ajaia assessment (https://ajaia.ai)
 
 ## 1.5 Concrete Ridgeline Retention Plan (Without Live Streaming)
 * **Immediate Executive Engagement:** Schedule a 30-minute discovery session with Carla Reyes and her board athletic director this week. Acknowledge her need to serve distant grandparents and college recruiting scouts.
-* **Proactive Transparency on Ticket #1:** Inform Carla that a Ridgeline parent experienced a mis-tagged reel (#14 vs #4), and that our upcoming release specifically eliminates wrong-kid reels and guarantees thumbnail accuracy before Ridgeline’s signups open in 6 weeks.
+* **Proactive Transparency on Ticket #1:** Inform Carla that a Ridgeline parent experienced a mis-tagged reel (#14 vs #4), and that our upcoming release specifically eliminates wrong-kid reels and guarantees thumbnail accuracy before Ridgelineâ€™s signups open in 6 weeks.
 * **The "Scout & Family Pass" Interim Solution:** Scope a lightweight, frictionless web link that allows parents and coaches to publish high-definition game recaps and player reels to a verified, web-accessible view for college scouts and grandparents. This leverages our 90% share behavior at a fraction of the cost and complexity of live streaming [Assumption on relative cost, engineering to validate].
 * **Two-Week Answer & Pre-Signup Checkpoint:** Give Carla a concrete feasibility answer within 2 weeks following initial engineering sizing. Hold the formal live streaming decision checkpoint within 4 weeks (comfortably before Ridgeline's signups open in 6 weeks). We will consider live streaming only if: (1) Multiple clubs confirm willingness to pay a dedicated streaming surcharge; (2) Engineering validates field cellular feasibility; (3) Third-party camera/hardware integrations are established.
 
 ## 1.6 Anticipated Pushback & Rebuttals
-* **Pushback A: Carla / Ridgeline Board — "Just commit to live streaming now or we shop around."**
+* **Pushback A: Carla / Ridgeline Board â€” "Just commit to live streaming now or we shop around."**
   * *Rebuttal:* Live streaming on youth sports fields faces significant cellular uplink and hardware constraints [Assumption, engineering to validate], risking buffering or failed streams. What renewed half your parents was the delight of personalized highlight reels. We can provide scouts and grandparents high-definition remote access via verified web share links (solving remote viewing, though not real-time broadcast), with a firm delivery date committed once engineering completes technical sizing this week, while guaranteeing no child receives the wrong clips.
   * *What changes my mind:* 3+ peer clubs providing signed letters of intent with a dedicated streaming surcharge, alongside a third-party camera hardware partnership.
-* **Pushback B: Jamal Whitfield (VP Sales) — "You're gambling our biggest \$180k renewal."**
+* **Pushback B: Jamal Whitfield (VP Sales) â€” "You're gambling our biggest \$180k renewal."**
   * *Rebuttal:* Committing to full live streaming before technical sizing risks failed streams on game day and severe renewal churn [Assumption, engineering to validate]. Prioritizing tagging accuracy protects the core highlight product Carla credits for renewals. Scoping the Scout & Family Pass addresses remote family and scout access (though not real-time live streaming), with delivery dates committed only after engineering sizing, giving sales a credible, concrete plan instead of an unvalidated promise.
   * *What changes my mind:* If Carla rejects the discovery call and presents a verified competitive quote from a platform with proven field streaming.
-* **Pushback C: User Research Lead — "58% of surveyed parents explicitly asked for editor tools."**
+* **Pushback C: User Research Lead â€” "58% of surveyed parents explicitly asked for editor tools."**
   * *Rebuttal:* Surveys capture aspirational desires; telemetry captures true behavior. Only 6% of parents open the editor, and under 1% of that 6% (under 0.06% of all parents) finish an edit. Optimizing an authoring tool with a finished-edit rate under 0.06% while 30% of reels go unviewed due to wrong thumbnails is an inefficient allocation of sprint capacity.
   * *What changes my mind:* If an in-app prompt asking parents "Trim this clip before sharing?" achieves over 25% completion in a live A/B test.
-* **Pushback D: Executive Stakeholder — "Why not compromise and build both the editor and the accuracy fix?"**
+* **Pushback D: Executive Stakeholder â€” "Why not compromise and build both the editor and the accuracy fix?"**
   * *Rebuttal:* Parallel development fragments engineering focus. Tagging accuracy requires machine learning threshold tuning, coach UI workflows, and automated fallback logic. Splitting focus produces an inaccurate reel generator with a clunky video editor that parents still won't use.
   * *What changes my mind:* Additional dedicated engineering headcount specifically contracted for frontend media composition.
 
